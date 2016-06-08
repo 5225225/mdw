@@ -1,0 +1,76 @@
+body {
+    background: #151515;
+    color: #f0f0f0;
+    font-size: 110%;
+}
+
+p {
+    max-width: 650px;
+    text-align: justify;
+}
+
+code {
+    background: #202020;
+    border: 1px solid #555555;
+    padding-left: 3px;
+    padding-right: 3px;
+    border-radius: 2px;
+}
+
+blockquote {
+    padding-left: 4px;
+    margin: 10px;
+    border-left: 4px solid #707070;
+    background: #333333;
+}
+
+textarea {
+    background: #202020;
+    color: #f0f0f0;
+    border: 0px;
+}
+
+textarea.edit {
+    margin: 20px;
+} 
+
+div.highlight {
+    padding-right: 40px;
+}
+
+span.lineno {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+} 
+
+span.filename {
+    font-size: 125%;
+    font-weight: bold;
+    font-family: monospace;
+    border-radius: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-left: 20px;
+    border: 1px solid #ffffff;
+    background: #444444;
+}
+
+mark {
+    background: #333333;
+    color: #ffffff;
+    border-radius: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+a#editnote {
+    color: #666666;
+    font-size: 80%;
+}
+
+a.headlink {
+    font-size: 16px;
+    text-decoration: none;
+    color: #999999;
+}
