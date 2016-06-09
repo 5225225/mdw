@@ -2,7 +2,6 @@ import os
 import time
 import uuid
 import difflib
-import re
 
 import bottle
 import hoep
@@ -11,7 +10,8 @@ import pygments.lexers
 import pygments.formatters
 
 
-ROOT=os.path.expanduser("~/src/mdw")
+ROOT = os.path.expanduser("~/src/mdw")
+
 
 def get_title(fname):
     head = open("wiki/{}".format(fname)).readline()
@@ -22,8 +22,10 @@ def get_title(fname):
     else:
         return fname
 
+
 def valid(path, basedir):
     return os.path.abspath(path).startswith(basedir)
+
 
 def log_edit(request, before, after):
     result = ""
@@ -35,7 +37,6 @@ def log_edit(request, before, after):
     date = time.strftime("%Y-%m-%d %H:%M:%S")
     path = request.path
     edit_uuid = str(uuid.uuid4())
-
 
     result += "=== BEGIN EDIT {} ===\n".format(edit_uuid)
     result += "{} {} {}\n".format(date, addr, path)
@@ -86,33 +87,33 @@ class MyRenderer(hoep.Hoep):
             if filename == "":
                 filename = None
 
-
         if language is not None:
             try:
                 lexer = pygments.lexers.get_lexer_by_name(language)
             except pygments.util.ClassNotFound:
                 lexer = pygments.lexers.get_lexer_by_name("text")
 
-
         formatter = pygments.formatters.HtmlFormatter(
                     linenos="table",
-#                    filename=filename
         )
 
         hlblock = pygments.highlight(text, lexer, formatter)
 
-        return "<table class=codeblock><tr><td>{fname}</td></tr><tr><td>{code}</td></tr></table>".format(
+        return """<table class=codeblock>
+        <tr><td>{fname}</td></tr>
+        <tr><td>{code}</td></tr>
+        </table>""".format(
             fname="<span class=filename>{filename}</span>".format(
                 filename=filename
             ),
-            code = hlblock,
+            code=hlblock,
         )
-
 
     def header(self, text, level):
         short_name = text.replace(" ", "_")
 
-        return '<h{level} id="{short_name}">{text} <a class="headlink" href="#{short_name}">#</a></h{level}>\n'.format(
+        return """<h{level} id="{short_name}">{text}
+        <a class="headlink" href="#{short_name}">#</a></h{level}>\n""".format(
             text=text,
             level=level,
             short_name=short_name)
@@ -123,31 +124,32 @@ app = bottle.Bottle()
 
 base_plate = bottle.SimpleTemplate(
     open("templates/base.html").read(),
-    noescape = True)
+    noescape=True)
 
 wiki_plate = bottle.SimpleTemplate(
     base_plate.render(
-    body=open("templates/wiki.html").read(),
-    title="{{title}}"),
-    noescape = True)
+        body=open("templates/wiki.html").read(),
+        title="{{title}}"),
+    noescape=True)
 
 edit_plate = bottle.SimpleTemplate(
     base_plate.render(
-    body=open("templates/edit.html").read(),
-    title="{{title}}"),
-    noescape = True)
+        body=open("templates/edit.html").read(),
+        title="{{title}}"),
+    noescape=True)
 
 upload_plate = bottle.SimpleTemplate(
     base_plate.render(
-    body=open("templates/upload.html").read(),
-    title="{{title}}"),
-    noescape = True)
+        body=open("templates/upload.html").read(),
+        title="{{title}}"),
+    noescape=True)
 
 uploaded_plate = bottle.SimpleTemplate(
     base_plate.render(
-    body=open("templates/uploaded.html").read(),
-    title="{{title}}"),
-    noescape = True)
+        body=open("templates/uploaded.html").read(),
+        title="{{title}}"),
+    noescape=True)
+
 
 @app.route("/wiki/<page>")
 def wiki(page):
@@ -160,7 +162,10 @@ def wiki(page):
 
     md_body = markdown.render(md)
 
-    rendered = wiki_plate.render(body=md_body, fname=fname, title=get_title(fname + ".md"))
+    rendered = wiki_plate.render(
+        body=md_body,
+        fname=fname,
+        title=get_title(fname + ".md"))
 
     return rendered
 
@@ -182,10 +187,10 @@ def get_edit(page):
 
     return rendered
 
+
 @app.post("/edit/<page>")
 def post_edit(page):
     fname = os.path.splitext(page)[0]
-
 
     try:
         with open("wiki/{}.md".format(fname)) as f:
@@ -205,14 +210,15 @@ def post_edit(page):
     return bottle.redirect("/wiki/{}".format(fname))
 
 
-    
 @app.route("/css/<filename>")
 def css(filename):
     return bottle.static_file(filename, root=ROOT + "/css")
 
+
 @app.route("/files/<filename>")
 def files(filename):
     return bottle.static_file(filename, root=ROOT + "/files")
+
 
 @app.route("/files")
 def files_listing():
@@ -221,7 +227,9 @@ def files_listing():
         filenames.append("<a href=/files/{}>{}</a>".format(
             fname, fname
         ))
-    return base_plate.render(body="</br>".join(filenames)).render(title="Files")
+    return base_plate.render(
+        body="</br>".join(filenames)).render(title="Files")
+
 
 @app.route("/list")
 def wiki_listing():
@@ -231,27 +239,33 @@ def wiki_listing():
             fname,
             get_title(fname)
         ))
-    return base_plate.render(body="</br>".join(filenames).render(title="Wiki Pages"))
+    return base_plate.render(
+        body="</br>".join(filenames).render(title="Wiki Pages"))
+
 
 @app.route("/editlog")
 def logs():
     return bottle.static_file("edit.log", root=ROOT + "/logs")
 
+
 @app.route("/MathJax/<filename:path>")
-def logs(filename):
+def mathjax(filename):
     return bottle.static_file(filename, root=ROOT + "/MathJax")
+
 
 @app.get("/upload")
 def get_upload():
     return upload_plate.render(title="Upload")
 
+
 @app.post("/upload")
 def post_upload():
- 
+
     uploaded = bottle.request.files.uploaded
-    
+
     filename = bottle.request.forms.filename or \
-               bottle.request.files.uploaded.filename
+        bottle.request.files.uploaded.filename
+
     # Use the given filename as an override, fallback to the original.
 
     filename = filename.replace("/", "_")
@@ -262,16 +276,19 @@ def post_upload():
     try:
         uploaded.save(ROOT + "/files/{}".format(filename))
     except OSError:
-        return base_plate.render(body="File exists. Pick a different name.").render(title="Upload Error")
+        return base_plate.render(
+            body="File already exists").render(title="Upload Error")
 
     return uploaded_plate.render(fname=filename, title="Uploaded")
+
 
 @app.route("/")
 def home():
     return bottle.redirect("/wiki/homepage")
 
+
 bottle.run(app,
            host="",
            port=8888,
            debug=True,
-)
+           )
