@@ -14,7 +14,10 @@ ROOT = os.path.expanduser("~/src/mdw")
 
 
 def get_title(fname):
-    head = open("wiki/{}".format(fname)).readline()
+    try:
+        head = open("wiki/{}".format(fname)).readline()
+    except FileNotFoundError:
+        return None
     if head.startswith("# "):
         head = head[2:]
         head = head.strip()
@@ -165,7 +168,7 @@ def wiki(page):
     rendered = wiki_plate.render(
         body=md_body,
         fname=fname,
-        title=get_title(fname + ".md"))
+        title=get_title(fname + ".md")) or "Page does not exist"
 
     return rendered
 
