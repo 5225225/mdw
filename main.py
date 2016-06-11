@@ -1,13 +1,17 @@
 import os
+import os.path
 import time
 import uuid
 import difflib
+import hashlib
 
 import bottle
 import hoep
 import pygments
 import pygments.lexers
 import pygments.formatters
+
+import latex
 
 
 ROOT = os.path.expanduser("~/src/mdw")
@@ -80,6 +84,18 @@ class MyRenderer(hoep.Hoep):
         lexer = None
         language = None
         filename = None
+
+        if tag == "!latex":
+            text = text.strip()
+            img = latex.render_png(text)
+            h = hashlib.sha256(text.encode("UTF-8")).hexdigest()
+            fname = "tmp-" + h + ".png"
+
+            if not os.path.isfile("files/" + fname):
+                with open("files/" + fname, "wb") as f:
+                    f.write(img)
+
+            return '<img src="/files/{}" alt="{}">'.format(fname, text)
 
         if tag is not None:
             language, *filename = tag.split("|")
